@@ -1,0 +1,125 @@
+.footer {
+    background-color: var(--color-navy-blue);
+    color: #fff;
+    padding: 80px 20px 40px;
+    font-family: var(--font-family-sans);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 60px;
+}
+
+.topSection {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 40px;
+}
+
+.brandCol {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-right: 40px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logoIcon {
+    font-size: 2.2rem;
+    color: var(--color-electric-green);
+}
+
+.logoText {
+    font-family: var(--font-family-heading);
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.5px;
+}
+
+.brandDesc {
+    color: #a0aec0;
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+.linksCol {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.colTitle {
+    font-family: var(--font-family-heading);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+}
+
+.link {
+    color: #a0aec0;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.2s ease;
+}
+
+.link:hover {
+    color: var(--color-electric-green);
+}
+
+.bottomSection {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    /* Align bottom instead of center */
+}
+
+.locationBlock {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    max-width: 400px;
+}
+
+.pinIcon {
+    font-size: 1.2rem;
+    margin-top: 2px;
+}
+
+.locationText {
+    color: #a0aec0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.locationText strong {
+    color: #ffffff;
+    font-size: 1rem;
+    font-family: var(--font-family-heading);
+}
+
+.copyright {
+    color: #718096;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .topSection {
+        grid-template-columns: 1fr;
+    }
+
+    .brandCol {
+        padding-right: 0;
+    }
+}
