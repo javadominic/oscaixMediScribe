@@ -156,6 +156,12 @@ src/app/
 
 Built entirely during the hackathon build phase. All code written live during the competition — no pre-built code pushed.
 
+| Name | Role |
+|---|---|
+| **Saeed Ansari** | Full Stack & AI Integration |
+| **Madhu Tiwari** | Full Stack & UI/UX |
+| **Priyanshu Pratik** | Full Stack & Backend |
+
 ---
 
 *MediScribe — Because doctors should be talking to patients, not filling forms.*
