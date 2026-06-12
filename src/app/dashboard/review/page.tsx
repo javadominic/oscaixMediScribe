@@ -249,12 +249,11 @@ export default function ReviewPage() {
                             <span style={{ fontSize: '12px' }}>▼</span>
                         </button>
                         <div style={{ fontSize: '13px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>{activePatient?.age || ''} | {activePatient?.id || ''}</div>
-                        {activePatient?.abhaId && (
-                            <div style={{ marginTop: '8px', padding: '8px 10px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '6px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
-                                <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>ABHA ID</span>
-                                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-accent-green)', marginTop: '2px' }}>{activePatient.abhaId}</div>
-                            </div>
-                        )}
+                        <div style={{ marginTop: '8px', padding: '8px 10px', background: activePatient?.abhaId ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)', borderRadius: '6px', border: `1px solid ${activePatient?.abhaId ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.2)'}` }}>
+                            <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>ABHA ID</span>
+                            <div style={{ fontSize: '14px', fontWeight: 600, color: activePatient?.abhaId ? 'var(--color-accent-green)' : 'var(--color-alert-amber)' }}>{activePatient?.abhaId || 'Sync in Progress ⏳'}</div>
+                            <div style={{ fontSize: '10px', color: 'var(--color-alert-amber)', marginTop: '4px', lineHeight: 1.2 }}>(Working with Govt for live ABDM API integration)</div>
+                        </div>
 
                         {showPatientList && (
                             <div style={{ position: 'absolute', bottom: '100%', left: 0, marginBottom: '8px', background: 'var(--color-sidebar-bg)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', width: '100%', zIndex: 100, boxShadow: '0 -10px 25px rgba(0,0,0,0.5)', overflow: 'hidden' }}>

@@ -326,7 +326,8 @@ export default function ScribePage(props: { isDemo?: boolean, onDemoComplete?: (
                         <div style={{ display: 'flex', gap: '32px' }}>
                             <div>
                                 <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>ABHA ID</span>
-                                <div style={{ fontSize: '14px', fontWeight: 600, color: activePatient?.abhaId ? 'var(--color-accent-green)' : '#ef4444' }}>{activePatient?.abhaId || 'Not Linked'}</div>
+                                <div style={{ fontSize: '14px', fontWeight: 600, color: activePatient?.abhaId ? 'var(--color-accent-green)' : 'var(--color-alert-amber)' }}>{activePatient?.abhaId || 'Sync in Progress ⏳'}</div>
+                                <div style={{ fontSize: '10px', color: 'var(--color-alert-amber)', marginTop: '2px', maxWidth: '160px', lineHeight: 1.2 }}>(Working with Govt for live ABDM API integration)</div>
                             </div>
                             <div>
                                 <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Vitals Summary</span>

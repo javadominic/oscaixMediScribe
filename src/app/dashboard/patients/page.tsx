@@ -32,10 +32,7 @@ export default function ReceptionistIntakePage() {
         e.preventDefault();
         if (!fullName.trim() || !contact.trim()) return;
 
-        if (!abhaId.trim() || abhaId.trim().length < 10) {
-            alert('ABHA ID is compulsory for ABDM tracking. Please enter a valid 14-digit ABHA Number.');
-            return;
-        }
+        // Removed ABHA ID validation to allow skipping
 
         if (!otpSent) {
             alert('Please send and verify the OTP before registering the patient.');
@@ -158,17 +155,19 @@ export default function ReceptionistIntakePage() {
                         </div>
 
                         <div>
-                            <label style={{ display: 'block', fontSize: '13px', color: 'var(--color-text-secondary)', marginBottom: '6px', fontWeight: '500' }}>ABHA ID (ABDM Link) * <span style={{ fontSize: '11px', color: '#ef4444' }}>Compulsory</span></label>
+                            <label style={{ display: 'block', fontSize: '13px', color: 'var(--color-text-secondary)', marginBottom: '6px', fontWeight: '500' }}>
+                                ABHA ID (ABDM Link) * <span style={{ fontSize: '11px', color: '#ef4444' }}>Compulsory</span>
+                                <span style={{ display: 'block', fontSize: '11px', color: 'var(--color-alert-amber)', marginTop: '2px', fontStyle: 'italic' }}>
+                                    (We are working with the government to get the live integration working, as it takes time. Any mock ID will work for the demo.)
+                                </span>
+                            </label>
                             <input
                                 required
                                 value={abhaId}
                                 onChange={e => setAbhaId(e.target.value)}
                                 placeholder="e.g. 91-1234-5678-9012"
-                                style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.03)', border: abhaId.trim().length > 0 && abhaId.trim().length < 10 ? '1px solid #ef4444' : '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--color-text-primary)' }}
+                                style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--color-text-primary)' }}
                             />
-                            {abhaId.trim().length > 0 && abhaId.trim().length < 10 && (
-                                <span style={{ fontSize: '11px', color: '#ef4444', marginTop: '4px', display: 'block' }}>ABHA ID must be at least 10 characters</span>
-                            )}
                         </div>
 
                         <div>
