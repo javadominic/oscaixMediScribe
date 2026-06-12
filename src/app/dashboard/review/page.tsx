@@ -31,49 +31,52 @@ export default function ReviewPage() {
     const [investigations, setInvestigations] = useState('Complete Blood Count (CBC)\nMRI Brain (if symptoms worsen)');
     const [medications, setMedications] = useState('');
     const [hasAutoFilled, setHasAutoFilled] = useState(false);
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [safetyFlag, setSafetyFlag] = useState<{ message: string } | null>(null);
 
-    // Auto-populate ONLY from structured demo transcripts (not raw live-mic noise)
+    // Auto-populate from Gemini API using the combined transcript data
     useEffect(() => {
-        if (hasAutoFilled) return;
+        if (hasAutoFilled || !activePatientId) return;
 
         const patientTranscripts = transcripts[activePatientId];
-
-        // Only use transcripts that come from the demo (speaker is 'Doctor' or 'Patient', not 'Doctor/Patient (Live)')
-        const structuredTranscripts = (patientTranscripts || []).filter(
-            (t: any) => t.speaker === 'Doctor' || t.speaker === 'Patient'
-        );
-
-        if (structuredTranscripts.length === 0) {
-            // No structured demo data — leave all fields blank for the doctor to fill manually
+        if (!patientTranscripts || patientTranscripts.length === 0) {
             setHasAutoFilled(true);
             return;
         }
 
-        // Build HPI from structured demo conversation
-        const hpiText = structuredTranscripts
-            .map((t: any) => `[${t.speaker}]: ${t.text}`)
-            .join('\n');
-        setComplaint(hpiText);
+        const fetchSummary = async () => {
+            setIsGenerating(true);
+            try {
+                const combinedText = patientTranscripts.map((t: any) => `[${t.speaker || 'Log'}]: ${t.text}`).join('\n');
+                
+                const res = await fetch('/api/summarize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ transcript: combinedText })
+                });
 
-        // Extract diagnosis from patient record
-        if (activePatient?.diagnosis) {
-            setDiagnosis(activePatient.diagnosis + (activePatient.diagnosis.includes('ICD') ? '' : ' (ICD-10 Pending)'));
-        }
+                if (!res.ok) throw new Error('API Error');
+                
+                const data = await res.json();
+                
+                if (data.complaint) setComplaint(data.complaint);
+                if (data.diagnosis) setDiagnosis(data.diagnosis);
+                if (data.investigations) setInvestigations(data.investigations);
+                if (data.medications) setMedications(data.medications);
+                if (data.safetyFlags) setSafetyFlag({ message: data.safetyFlags });
+                
+            } catch (error) {
+                console.error("Failed to fetch Gemini summary", error);
+                // Fallback to basic if API fails
+                setComplaint("Failed to auto-generate summary.");
+            } finally {
+                setIsGenerating(false);
+                setHasAutoFilled(true);
+            }
+        };
 
-        // Extract medications from structured demo transcript lines
-        const medLines = structuredTranscripts
-            .filter((t: any) =>
-                t.text.toLowerCase().includes('prescribe') ||
-                t.text.toLowerCase().includes('mg') ||
-                t.text.toLowerCase().includes('sumatriptan')
-            )
-            .map((t: any) => t.text);
-        if (medLines.length > 0) {
-            setMedications(medLines.join('\n'));
-        }
-
-        setHasAutoFilled(true);
-    }, [activePatientId, transcripts, activePatient, hasAutoFilled]);
+        fetchSummary();
+    }, [activePatientId, transcripts, hasAutoFilled]);
 
     // Checklist State
     const [checks, setChecks] = useState({
@@ -178,14 +181,21 @@ export default function ReviewPage() {
                 <div className={styles.workflowCard} style={{ flex: 1, overflow: 'visible' }}>
                     <div className={styles.cardHeader}>
                         <h2 className={styles.cardTitle}>Doctor Review & Finalize</h2>
+                        {isGenerating && <span style={{ marginLeft: '12px', fontSize: '13px', color: 'var(--color-accent-green)', background: 'rgba(16, 185, 129, 0.1)', padding: '4px 10px', borderRadius: '12px', animation: 'pulse 2s infinite' }}>✨ Gemini is generating summary...</span>}
                     </div>
-                    <div style={{ background: 'rgba(245, 158, 11, 0.1)', borderLeft: '4px solid var(--color-alert-amber)', padding: '16px 20px', borderRadius: '8px', display: 'flex', gap: '16px', alignItems: 'center' }}>
-                        <div style={{ fontSize: '24px' }}>⚠️</div>
-                        <div>
-                            <h4 style={{ margin: 0, color: 'var(--color-alert-amber)', fontSize: '15px', fontWeight: 'bold' }}>Clinical Safety Flag: High Priority</h4>
-                            <p style={{ margin: '4px 0 0 0', color: 'var(--color-text-primary)', fontSize: '14px' }}>Patient has a history of NSAID-induced gastritis. Consider prescribing a PPI with Naproxen or alternative analgesia.</p>
+                    {safetyFlag ? (
+                        <div style={{ background: 'rgba(245, 158, 11, 0.1)', borderLeft: '4px solid var(--color-alert-amber)', padding: '16px 20px', borderRadius: '8px', display: 'flex', gap: '16px', alignItems: 'center' }}>
+                            <div style={{ fontSize: '24px' }}>⚠️</div>
+                            <div>
+                                <h4 style={{ margin: 0, color: 'var(--color-alert-amber)', fontSize: '15px', fontWeight: 'bold' }}>Clinical Safety Flag: High Priority</h4>
+                                <p style={{ margin: '4px 0 0 0', color: 'var(--color-text-primary)', fontSize: '14px' }}>{safetyFlag.message}</p>
+                            </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div style={{ padding: '16px 20px', color: 'var(--color-text-secondary)', fontSize: '14px' }}>
+                            No severe safety flags detected in this consultation.
+                        </div>
+                    )}
                 </div>
 
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center', height: '100%', paddingTop: '12px' }}>
@@ -331,7 +341,7 @@ export default function ReviewPage() {
                         <div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                                 <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>Final Prescription (Rx)</label>
-                                {!checks.meds && <span style={{ fontSize: '12px', color: 'var(--color-alert-amber)', fontWeight: 'bold' }}>Review required due to Safety Flag</span>}
+                                {(!checks.meds && safetyFlag) && <span style={{ fontSize: '12px', color: 'var(--color-alert-amber)', fontWeight: 'bold' }}>Review required due to Safety Flag</span>}
                             </div>
                             <textarea
                                 value={medications}
