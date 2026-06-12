@@ -149,20 +149,24 @@ export default function ScribePage(props: { isDemo?: boolean, onDemoComplete?: (
             });
         }
         if (emrContainerRef.current) {
-            let targetTop = 0;
-            if (listLength >= 7) {
-                targetTop = emrContainerRef.current.scrollHeight; // Scroll to Meds
-            } else if (listLength >= 4) {
-                targetTop = 150; // Scroll to Diagnosis
-            } else {
-                targetTop = 0; // Stay at top for Chief Complaint
-            }
-            emrContainerRef.current.scrollTo({
-                top: targetTop,
-                behavior: 'smooth'
-            });
+            setTimeout(() => {
+                if (!emrContainerRef.current) return;
+                let targetTop = 0;
+                // Use demoLength to determine which box is active
+                if (demoLength >= 7) {
+                    targetTop = emrContainerRef.current.scrollHeight; // Scroll to bottom (Safety/Meds)
+                } else if (demoLength >= 4) {
+                    targetTop = emrContainerRef.current.scrollHeight * 0.4; // Scroll to middle (Diagnosis)
+                } else {
+                    targetTop = 0; // Stay at top
+                }
+                emrContainerRef.current.scrollTo({
+                    top: targetTop,
+                    behavior: 'smooth'
+                });
+            }, 50); // Small delay to let DOM update heights
         }
-    }, [transcripts, activePatientId, listLength]);
+    }, [transcripts, activePatientId, listLength, interimTranscript]);
 
     const toggleRecording = () => {
         if (!activePatientId && patients.length > 0) {
