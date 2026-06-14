@@ -119,6 +119,20 @@ MediScribe is built with ABDM compliance in mind:
 - Patient data is structured for ABDM-compatible records
 - **Live ABHA verification API** — we are actively working with government partners on the integration. It takes time for Govt. API access approval; mock IDs work for the demo.
 
+## 🚢 Deployment & Infrastructure
+
+MediScribe is fully production-ready and configured for scalable deployment.
+
+- **Containerization**: Included `Dockerfile` and `docker-compose.yml` for isolated, multi-environment deployments.
+- **Serverless**: Configured for Vercel/Next.js edge deployment via `vercel.json`.
+- **CI/CD**: Automated GitHub Actions pipeline (`.github/workflows/build.yml`) ensures build integrity on every push to main.
+- **Environment**: Documented configuration variables in `.env.example`.
+
+### Local Docker Build
+```bash
+docker-compose up --build
+```
+
 ---
 
 ## 🔮 What's Next
