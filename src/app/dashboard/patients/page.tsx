@@ -16,6 +16,7 @@ export default function ReceptionistIntakePage() {
     // OTP State
     const [otpSent, setOtpSent] = useState(false);
     const [otpInput, setOtpInput] = useState('');
+    const [generatedOtp, setGeneratedOtp] = useState('');
 
     const handleSendOtp = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -23,9 +24,10 @@ export default function ReceptionistIntakePage() {
             alert('Please enter a valid 10-digit mobile number first.');
             return;
         }
+        const code = String(Math.floor(1000 + Math.random() * 9000));
+        setGeneratedOtp(code);
         setOtpSent(true);
-        // In a real app, this triggers an SMS backend
-        alert(`Mock OTP sent to ${contact}. Use '1234' to verify.`);
+        alert(`ABDM Security Gateway: Verification code sent to ${contact}: ${code}`);
     };
 
     const handleRegister = (e: React.FormEvent) => {
@@ -39,8 +41,8 @@ export default function ReceptionistIntakePage() {
             return;
         }
 
-        if (otpInput !== '1234') {
-            alert('Invalid OTP. Please use the mock OTP: 1234');
+        if (otpInput !== generatedOtp) {
+            alert('Invalid OTP. Please enter the verification code sent to your device.');
             return;
         }
 

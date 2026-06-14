@@ -1,23 +1,43 @@
 'use client';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../../../lib/firebase';
 
 export default function AdminLogin() {
-    const [userId, setUserId] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError('');
+        setLoading(true);
 
-        // Mock Auth specific to Admin
-        if (userId === 'lorn4' && password === 'Dom341@#') {
-            localStorage.setItem('userRole', 'Admin');
-            localStorage.setItem('userName', 'Super Admin');
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+
+            if (userDoc.exists()) {
+                const data = userDoc.data();
+                localStorage.setItem('userRole', data.role || 'Admin');
+                localStorage.setItem('userName', data.name || user.displayName || 'Super Admin');
+            } else {
+                localStorage.setItem('userRole', 'Admin');
+                localStorage.setItem('userName', user.displayName || 'Super Admin');
+            }
             router.push('/dashboard');
-        } else {
-            setError('Invalid credentials for Super Admin Portal. (Hint: lorn4)');
+        } catch (err: any) {
+            const msg = err.code === 'auth/invalid-credential'
+                ? 'Invalid email or password. Please try again.'
+                : err.message || 'Login failed. Please try again.';
+            setError(msg);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -38,13 +58,15 @@ export default function AdminLogin() {
                         )}
 
                         <div>
-                            <label style={{ display: 'block', fontSize: '14px', marginBottom: '8px', color: 'var(--color-text-secondary)' }}>Admin User ID</label>
+                            <label style={{ display: 'block', fontSize: '14px', marginBottom: '8px', color: 'var(--color-text-secondary)' }}>Admin Email</label>
                             <input
                                 autoFocus
-                                value={userId}
-                                onChange={(e) => setUserId(e.target.value)}
+                                type="email"
+                                required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 style={{ width: '100%', padding: '12px 16px', background: 'var(--color-workspace-bg)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--color-text-primary)', outline: 'none' }}
-                                placeholder="Enter Admin ID"
+                                placeholder="admin@clinic.com"
                             />
                         </div>
 
@@ -52,6 +74,7 @@ export default function AdminLogin() {
                             <label style={{ display: 'block', fontSize: '14px', marginBottom: '8px', color: 'var(--color-text-secondary)' }}>Password</label>
                             <input
                                 type="password"
+                                required
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 style={{ width: '100%', padding: '12px 16px', background: 'var(--color-workspace-bg)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--color-text-primary)', outline: 'none' }}
@@ -59,13 +82,26 @@ export default function AdminLogin() {
                             />
                         </div>
 
-                        <button type="submit" style={{ width: '100%', padding: '14px', background: 'var(--color-accent-green)', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', marginTop: '8px' }}>
-                            Access Dashboard
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            style={{ width: '100%', padding: '14px', background: 'var(--color-accent-green)', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: loading ? 'not-allowed' : 'pointer', marginTop: '8px', opacity: loading ? 0.7 : 1 }}
+                        >
+                            {loading ? 'Signing in...' : 'Access Dashboard'}
                         </button>
                     </form>
 
-                    <div style={{ marginTop: '24px', fontSize: '12px', color: 'var(--color-text-secondary)', textAlign: 'center' }}>
-                        Testing Credentials: ID: <b>lorn4</b> | Pass: <b>Dom341@#</b>
+                    <div style={{ marginTop: '24px', textAlign: 'center' }}>
+                        <button
+                            onClick={() => router.push('/login')}
+                            style={{ background: 'none', border: 'none', color: 'var(--color-accent-green)', cursor: 'pointer', fontSize: '13px', textDecoration: 'underline' }}
+                        >
+                            ← Back to main login
+                        </button>
+                    </div>
+
+                    <div style={{ marginTop: '16px', padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', fontSize: '12px', color: 'var(--color-text-secondary)', textAlign: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        🔒 Secured by Firebase Authentication
                     </div>
                 </div>
             </div>

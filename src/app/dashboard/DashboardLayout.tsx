@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { signOut } from 'firebase/auth';
+import { auth } from '../../lib/firebase';
 import styles from './DashboardLayout.module.css';
 import { GlobalStateProvider } from './GlobalStateContext';
 
@@ -32,7 +34,12 @@ export default function DashboardLayout({ children, isPreview = false, previewRo
         setUserName(name);
     }, []);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+        } catch (e) {
+            console.error("Firebase signout error:", e);
+        }
         localStorage.removeItem('userRole');
         localStorage.removeItem('userName');
         router.push('/login');

@@ -1,5 +1,7 @@
 'use client';
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { collection, onSnapshot, doc, setDoc } from 'firebase/firestore';
+import { db } from '../../lib/firebase';
 
 // Shared mock data
 const INITIAL_PATIENTS = [
@@ -47,15 +49,50 @@ type GlobalStateContextType = {
     pharmacyAlerts: string[];
     setPharmacyAlerts: React.Dispatch<React.SetStateAction<string[]>>;
     addPatient: (patient: any) => void;
+    updatePatient: (patientId: string, updates: any) => void;
     addTranscriptRecord: (patientId: string, entry: any) => void;
 };
 
 const GlobalStateContext = createContext<GlobalStateContextType | undefined>(undefined);
 
 export function GlobalStateProvider({ children }: { children: ReactNode }) {
-    const [patients, setPatients] = useState(INITIAL_PATIENTS);
-    const [transcripts, setTranscripts] = useState(INITIAL_TRANSCRIPTS);
-    const [activePatientId, setActivePatientId] = useState(INITIAL_PATIENTS[0].id);
+    const [patients, setPatients] = useState<any[]>([]);
+    const [transcripts, setTranscripts] = useState<Record<string, any[]>>({});
+    const [activePatientId, setActivePatientId] = useState('');
+
+    // Load and Sync Patients from Firestore
+    useEffect(() => {
+        const unsubscribe = onSnapshot(collection(db, 'patients'), async (snapshot) => {
+            if (snapshot.empty) {
+                // Seed database with mock data if empty
+                for (const patient of INITIAL_PATIENTS) {
+                    await setDoc(doc(db, 'patients', patient.id), patient);
+                }
+            } else {
+                const list: any[] = [];
+                snapshot.forEach((doc) => {
+                    list.push({ id: doc.id, ...doc.data() });
+                });
+                setPatients(list);
+                if (list.length > 0 && !activePatientId) {
+                    setActivePatientId(list[0].id);
+                }
+            }
+        });
+        return () => unsubscribe();
+    }, [activePatientId]);
+
+    // Load and Sync Transcripts from Firestore
+    useEffect(() => {
+        const unsubscribe = onSnapshot(collection(db, 'transcripts'), (snapshot) => {
+            const dict: Record<string, any[]> = {};
+            snapshot.forEach((doc) => {
+                dict[doc.id] = doc.data().records || [];
+            });
+            setTranscripts(prev => ({ ...prev, ...dict }));
+        });
+        return () => unsubscribe();
+    }, []);
 
     // Clinic Details configuration
     const [clinicDetails, setClinicDetails] = useState({
@@ -74,19 +111,31 @@ export function GlobalStateProvider({ children }: { children: ReactNode }) {
         'Low Stock: Amoxicillin syrup for pediatrics'
     ]);
 
-    const addPatient = (patient: any) => {
-        setPatients(prev => [patient, ...prev]);
-        setTranscripts(prev => ({ ...prev, [patient.id]: [] }));
+    const addPatient = async (patient: any) => {
+        try {
+            await setDoc(doc(db, 'patients', patient.id), patient);
+            await setDoc(doc(db, 'transcripts', patient.id), { records: [] });
+        } catch (e) {
+            console.error("Error writing patient to Firestore:", e);
+        }
     };
 
-    const addTranscriptRecord = (patientId: string, entry: any) => {
-        setTranscripts(prev => {
-            const currentList = prev[patientId] || [];
-            return {
-                ...prev,
-                [patientId]: [...currentList, entry]
-            };
-        });
+    const updatePatient = async (patientId: string, updates: any) => {
+        try {
+            await setDoc(doc(db, 'patients', patientId), updates, { merge: true });
+        } catch (e) {
+            console.error("Error updating patient in Firestore:", e);
+        }
+    };
+
+    const addTranscriptRecord = async (patientId: string, entry: any) => {
+        try {
+            const currentList = transcripts[patientId] || [];
+            const updated = [...currentList, entry];
+            await setDoc(doc(db, 'transcripts', patientId), { records: updated }, { merge: true });
+        } catch (e) {
+            console.error("Error writing transcript to Firestore:", e);
+        }
     };
 
     return (
@@ -96,7 +145,7 @@ export function GlobalStateProvider({ children }: { children: ReactNode }) {
             activePatientId, setActivePatientId,
             clinicDetails, setClinicDetails,
             pharmacyAlerts, setPharmacyAlerts,
-            addPatient, addTranscriptRecord
+            addPatient, updatePatient, addTranscriptRecord
         }}>
             {children}
         </GlobalStateContext.Provider>

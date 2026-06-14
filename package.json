@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@google/genai": "^1.50.1",
+    "firebase": "^12.14.0",
     "framer-motion": "^12.35.0",
     "next": "16.1.6",
     "react": "19.2.3",

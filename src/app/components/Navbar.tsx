@@ -18,6 +18,7 @@ export default function Navbar() {
 
                 <div className={styles.navActions}>
                     <a href="/login" className={styles.loginBtn}>Log In</a>
+                    <a href="/demo" className={styles.demoBtn} style={{ background: 'linear-gradient(135deg, #059669, #10b981)', color: '#fff', padding: '8px 20px', borderRadius: '8px', fontWeight: '700', textDecoration: 'none', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px', border: 'none' }}>🏆 Judge Demo</a>
                     <a href="/login" className={styles.ctaBtn}>Get Started</a>
                 </div>
             </div>
