@@ -243,7 +243,6 @@ export default function EmployeeListPage() {
                                         ))}
                                     </div>
 
-                                    {/* Action Buttons */}
                                     <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
 
                                         {/* Activate */}
